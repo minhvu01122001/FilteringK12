@@ -120,7 +120,7 @@ def clean_data(merge):
     if merge is not None:
         # Clean 'SĐT'
         merge = merge[~merge['SĐT'].isna()]
-        merge['SĐT'] = merge['SĐT'].astype(str)
+        merge.loc[:, 'SĐT'] = merge['SĐT'].astype(str)
         merge = merge.loc[~merge['SĐT'].str.contains(r'[a-zA-ZÀ-ỹ]', regex=True)]
         merge.loc[:, 'SĐT'] = (
             merge['SĐT'].astype(str)
