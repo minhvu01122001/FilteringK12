@@ -6,15 +6,10 @@ import io
 from datetime import datetime
 from pathlib import Path
 
-# Function to load custom HTML content
-def load_custom_html():
-    html_file_path = Path("base.html").resolve()  # Update path if in a subdirectory
-    with open(html_file_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
-    return html_content
-
-# Display custom HTML in the Streamlit app
-st.markdown(load_custom_html(), unsafe_allow_html=True)
+# Set the page title and other configurations
+st.set_page_config(
+    page_title="Lọc trùng K12"  # Page title
+)
 
 # Define filtered sheet names and new column names
 filtered_sheet_names = ['DATA 2',
