@@ -8,7 +8,8 @@ from pathlib import Path
 
 # Set the page title and other configurations
 st.set_page_config(
-    page_title="Lọc trùng K12"  # Page title
+    page_title="Lọc trùng K12",  # Page title
+    page_icon="https://drive.google.com/uc?export=view&id=1WDsZ7FvDubT9dyXNdcyfGSMGW3iduDtw"
 )
 
 # Define filtered sheet names and new column names
