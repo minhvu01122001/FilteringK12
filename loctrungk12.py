@@ -131,8 +131,11 @@ def clean_data(merge):
         merge = merge.loc[~merge['SĐT'].str.contains(r'[a-zA-ZÀ-ỹ]', regex=True)]
         merge.loc[:, 'SĐT'] = (
             merge['SĐT'].astype(str)
-            .str.replace(r'[^\d/&,-]', '', regex=True)
             .str.replace(r'\.0$', '', regex=True)
+        )
+        merge.loc[:, 'SĐT'] = (
+            merge['SĐT'].astype(str)
+            .str.replace(r'[^\d/&,-]', '', regex=True)
             .str.replace(r'\.', '', regex=True)
         )
         merge = merge[merge['SĐT'].apply(lambda x: 9 <= len(str(x)) <= 25)]
@@ -206,20 +209,37 @@ def clean_data(merge):
         merge['Key'] = merge['SĐT'].astype(str) + '-' + merge['Năm sinh'].astype(str)
         info = merge[['Mã Kho', 'Tên trường', 'Tên cha/mẹ 1', 'Tên cha/mẹ 2', 'Họ tên con', 'Lớp của con', 'Địa chỉ', 'Key']].copy()
         info = info.drop_duplicates(subset='Key', keep='first').reset_index(drop=True)
-        call = merge[['Ngày gọi', 'Ca', 'Level', 'Trạng thái cuộc gọi', 'Lý do KH từ chối CC2.3', '"Kết quả ngày 1\n(Ngày - giờ gọi - note chi tiết)"',
+        reason = merge[['Ngày gọi','Lý do KH từ chối CC2.3','Key']].copy()
+        reason = reason.dropna(subset=['Lý do KH từ chối CC2.3'])
+        reason = reason.sort_values(by=['Key', 'Ngày gọi'], ascending=[True, False])
+        reason = reason.drop_duplicates(subset=['Key'], keep='first')
+        reason = reason[['Lý do KH từ chối CC2.3','Key']]
+        call = merge[['Ngày gọi', 'Ca', 'Trạng thái cuộc gọi', 'Lý do KH từ chối CC2.3', '"Kết quả ngày 1\n(Ngày - giờ gọi - note chi tiết)"',
                       '"Kết quả ngày 2\n(Ngày - giờ gọi - note chi tiết)"', 'Key']].copy()
 
         # Keep row with highest 'Level'
-        idx = call.groupby(['Key', 'Ngày gọi'])['Level'].idxmax()
-        call = call.loc[idx].reset_index(drop=True)
-
+        call = call.sort_values(by=['Key', 'Ngày gọi'], ascending=[True, False])
+        call = call.drop_duplicates(subset=['Key'], keep='first')
+        
         # Merge date with 'call' and 'info'
-        date = merge.groupby('Key')['Ngày gọi'].max().reset_index()
-        date.columns = ['Key', 'Ngày gọi']
+        date = merge.groupby('Key').agg(
+            Ngay_goi_max=('Ngày gọi', 'max'),  # Max call date
+            So_lan_chia=('Key', 'size'),        # Count occurrences
+            Level_max=('Level', 'max')
+        ).reset_index()
+
+        date = date.rename(columns={
+            'Ngay_goi_max': 'Ngày gọi',
+            'So_lan_chia': 'Số lần chia',
+            'Level_max': 'Level'
+})
+
         final = (
             date
-            .merge(call, how='left', left_on=['Key', 'Ngày gọi'], right_on=['Key', 'Ngày gọi'])
+.merge(call, how='left', left_on=['Key', 'Ngày gọi'], right_on=['Key', 'Ngày gọi'])
             .merge(info, how='left', on='Key')
+.merge(reason, how='left', on='Key')
+
         )
 
         # Add 'SĐT' and 'Năm sinh' to final DataFrame
@@ -233,7 +253,7 @@ def clean_data(merge):
 
         # Drop unnecessary columns
         final = final[['Mã Kho', 'Tên trường', 'Tên cha/mẹ 1', 'Tên cha/mẹ 2', 'Họ tên con',
-                       'SĐT', 'SĐT_2', 'Năm sinh', 'Lớp của con', 'Địa chỉ', 'Ngày gọi',
+                       'SĐT', 'SĐT_2', 'Năm sinh', 'Lớp của con', 'Địa chỉ', 'Ngày gọi','Số lần chia',
                        'Level', 'Trạng thái cuộc gọi', 'Lý do KH từ chối CC2.3',
                        '"Kết quả ngày 1\n(Ngày - giờ gọi - note chi tiết)"',
                        '"Kết quả ngày 2\n(Ngày - giờ gọi - note chi tiết)"']]
