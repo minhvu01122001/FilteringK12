@@ -214,7 +214,7 @@ def clean_data(merge):
         reason = reason.sort_values(by=['Key', 'Ngày gọi'], ascending=[True, False])
         reason = reason.drop_duplicates(subset=['Key'], keep='first')
         reason = reason[['Lý do KH từ chối CC2.3','Key']]
-        call = merge[['Ngày gọi', 'Ca', 'Trạng thái cuộc gọi', 'Lý do KH từ chối CC2.3', '"Kết quả ngày 1\n(Ngày - giờ gọi - note chi tiết)"',
+        call = merge[['Ngày gọi', 'Ca', 'Trạng thái cuộc gọi', '"Kết quả ngày 1\n(Ngày - giờ gọi - note chi tiết)"',
                       '"Kết quả ngày 2\n(Ngày - giờ gọi - note chi tiết)"', 'Key']].copy()
 
         # Keep row with highest 'Level'
